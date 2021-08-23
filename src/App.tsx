@@ -9,11 +9,23 @@ import "./App.css";
 /* TODO: Implement debouncer */
 let timer: NodeJS.Timeout | undefined;
 function debounce(func: () => void, wait: number) {
-  return () => {
-    /* TODO */
-    setTimeout (func, wait);
-  };
+  return ((...args) => {
+    const context = this;
+    clearTimeout(timer);
+    timer = setTimeout (() => {
+      func.apply(context, args)
+    }, wait);
+  })
 }
+
+// let timer = null;
+// const throttle = (func, wait) => {
+//   return ((...args) => {
+//     if (timer) return;
+//     const context = this;
+//     timer = setTimeout(func.apply(this, args), wait)
+//   })
+// }
 
 function App() {
   const [data, setData] = useState<Person[]>([]);
@@ -38,6 +50,10 @@ function App() {
     debounce(filter, 1000)();
   }, [filter]);
 
+  useEffect(() => {
+    debouncedFilter();
+  }, [debouncedFilter]);
+
   const fetchPeople = useCallback(() => {
     setIsLoading(true);
     getPeopleList()
@@ -51,10 +67,6 @@ function App() {
   useEffect(() => {
     fetchPeople();
   }, [fetchPeople]);
-
-  useEffect(() => {
-    debouncedFilter();
-  }, [debouncedFilter]);
 
   return (
     <div className="App">
